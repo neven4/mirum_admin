@@ -1,0 +1,54 @@
+.header {
+    height: 55px;
+    border-bottom: 1px solid #000;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.logo {
+    padding: 0 10px;
+    flex: 1 1 10%;
+}
+
+.addCafe {
+    margin: 0 10px;
+    margin-left: auto;
+    flex: 1 1 10%;
+}
+
+.cardsList {
+    flex: 1 1 80%;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.headerCard {
+    padding: 0 10px;
+    height: 100%;
+    display: flex;
+    border-left: 1px solid #000;
+    align-items: center;
+    text-decoration: none;
+}
+
+.headerCard > h6 {
+    width: 70px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    margin: 0;
+    line-height: 55px;
+}
+
+.headerCard > div {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+    cursor: pointer;
+}
