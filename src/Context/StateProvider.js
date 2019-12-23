@@ -4,10 +4,15 @@ import React, {Component} from 'react';
 class StateProvider extends Component {
     state = {
         editableCards: [],
+        uploadedCards: []
     };
 
     updateState = (newState) => {
         this.setState({editableCards: newState})
+    }
+
+    updateUploadedCards = (newState) => {
+        this.setState({uploadedCards: newState})
     }
 
     createNewCard = () => {
@@ -46,6 +51,7 @@ class StateProvider extends Component {
                     update: this.updateState,
                     createNew: this.createNewCard,
                     removeCard: this.removeCard,
+                    updateUploadedCards: this.updateUploadedCards
                 }}
             >
                 {this.props.children}

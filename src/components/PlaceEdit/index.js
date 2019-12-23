@@ -3,9 +3,11 @@ import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Context from "../../Context/Context"
+import CircularProgress from "@material-ui/core/CircularProgress"
 
 const PlaceEdit = (props) => {
-	const [images, setImages] = useState([])
+	const [loading, setLoading] = useState(false)
+	const [loadingWithoutImages, setLoadingWithoutImages] = useState(false)
 	const context = useContext(Context)
 	const cardIndex = props.match.params.index
 	const cafeData = context.state.editableCards[cardIndex]
@@ -62,11 +64,57 @@ const PlaceEdit = (props) => {
         })
 	}
 
-	const uploadTextClick = () => {
-		fetch("https://us-central1-mirum-e30cc.cloudfunctions.net/api/cards", {
-			method: "POST",
-			body: JSON.stringify(cafeData)
+	const uploadClick = () => {
+		let formData = new FormData()
+		let authors = []
+		Object.keys(cafeData).forEach(el => {
+			if (el !== "photos") {
+				formData.append(el, cafeData[el])
+			}
 		})
+
+		cafeData.photos.forEach((el, i) => {
+			formData.append(`photo_${i}`, el.fileData)
+			authors.push(el.author)
+		})
+
+		formData.append("authors", authors)
+		
+		// http://localhost:5001/mirum-e30cc/us-central1/api
+		// https://us-central1-mirum-e30cc.cloudfunctions.net/api
+		fetch("https://us-central1-mirum-e30cc.cloudfunctions.net/api/post-card", {
+			method: "POST",
+			body: formData
+		}).then(res => {
+			if (res.status === 200) {
+				setLoading(false)
+				let data = [...context.state.editableCards]
+
+				data.splice(cardIndex, 1)
+
+				context.update(data)
+			}
+		})
+
+		setLoading(true)
+	}
+
+	const uploadOnlyText = () => {
+		let textData = {...cafeData}
+		delete textData.photos
+		delete textData.id
+
+		fetch(`https://us-central1-mirum-e30cc.cloudfunctions.net/api/updateCafeText/${cafeData.id}`, {
+			method: "POST",
+			body: JSON.stringify(textData)
+		}).then(res => {
+			if (res.status === 200) {
+				setLoadingWithoutImages(false)
+			}
+		})
+
+		
+		setLoadingWithoutImages(true)
 	}
 
 	return (
@@ -82,8 +130,7 @@ const PlaceEdit = (props) => {
 							value={cafeData.title || ""}
 						/>
 					</Grid>
-					<Grid item xs={1} />
-					<Grid item xs={5} style={{display: "flex", justifyContent: "space-between"}}>
+					<Grid item xs={6} style={{display: "flex", justifyContent: "space-between"}}>
 						<TextField
 							label="Координата 1"
 							variant="outlined"
@@ -114,8 +161,7 @@ const PlaceEdit = (props) => {
 							value={cafeData.metroName || ""}
 						/>
 					</Grid>
-					<Grid item xs={1} />
-					<Grid item xs={5}>
+					<Grid item xs={6}>
 						<TextField
 							label="Ссылка на инстаграм"
 							variant="outlined"
@@ -136,8 +182,7 @@ const PlaceEdit = (props) => {
 							value={cafeData.smallText || ""}
 						/>
 					</Grid>
-					<Grid item xs={1} />
-					<Grid item xs={5}>
+					<Grid item xs={6}>
 						<TextField
 							label="Адрес"
 							variant="outlined"
@@ -157,34 +202,76 @@ const PlaceEdit = (props) => {
 							value={cafeData.mainText || ""}
 						/>
 					</Grid>
+
 					<Grid item xs={6}>
-						
+						<TextField
+							label="Likes"
+							variant="outlined"
+							fullWidth={true}
+							onChange={e => changeCafeData("likes", e.target.value)}
+							value={cafeData.likes || ""}
+						/>
 					</Grid>
+					<Grid item xs={12}>
+						{cafeData.id && 
+							<div>Id: {cafeData.id}</div>
+						}
+					</Grid>
+
+					{cafeData && cafeData.id &&
+						<Grid item xs={12}>
+							<Button variant="contained" color="secondary" onClick={uploadOnlyText}
+								style={{marginTop: "20px"}}
+								disabled={loadingWithoutImages}
+							>
+								Upload without images
+								<div className="loading-container" style={!loadingWithoutImages ? {display: "none"} : {}}>
+									<CircularProgress variant="indeterminate" size={20} thickness={5}/>
+								</div>
+							</Button>
+						</Grid>
+					}
+
+					{cafeData && cafeData.id
+						? <>
+							{cafeData.photos.map((el, i) => {					
+								return <Grid key={i} item xs={4}>
+									<img src={el.source} width="100%" height="auto" />
+									<TextField
+										onChange={e => changePhotoAuth(i, e)}
+										value={el.author}
+										style={{width: "100%"}}
+									/>
+								</Grid>
+							})}
+						</>
+						: <>
+							{cafeData && cafeData.photos && cafeData.photos.map((el, i) => {					
+								return <Grid key={i} item xs={4}>
+									<img src={URL.createObjectURL(el.fileData)} width="100%" height="auto" />
+									<TextField
+										onChange={e => changePhotoAuth(i, e)}
+										value={el.author}
+										style={{width: "100%"}}
+									/>
+								</Grid>
+							})}
+						</>
+					}
 				</Grid>
 			}
-			
-			<Button variant="contained" color="primary" onClick={uploadTextClick}
-				style={{marginTop: "30px"}}
-			>
-				Upload text
-			</Button>
-
-			<div style={{display: "flex", flexWrap: "wrap"}}>
-				{cafeData && cafeData.photos && cafeData.photos.map((el, i) => {
-					
-					return <div key={i} style={{width: "100px"}}>
-						<img src={URL.createObjectURL(el.fileData)} width="100px" height="100px" />
-						<TextField
-							onChange={e => changePhotoAuth(i, e)}
-							value={el.author}
-							style={{width: "100px"}}
-						/>
-					</div>
-					
-				})}
-			</div>
 
 			<input type="file" multiple onChange={filesUploaded}/>
+
+			<Button variant="contained" color="primary" onClick={uploadClick}
+				style={{marginTop: "30px"}}
+				disabled={loading || (cafeData && cafeData.id)}
+			>
+				Upload
+				<div className="loading-container" style={!loading ? {display: "none"} : {}}>
+                    <CircularProgress variant="indeterminate" size={20} thickness={5}/>
+                </div>
+			</Button>
 		</>
 	)
 }
