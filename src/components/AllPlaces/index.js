@@ -9,7 +9,7 @@ const AllPlaces = (props) => {
 	const context = useContext(Context)
 
 	useEffect(() => {
-		fetch("https://us-central1-mirum-e30cc.cloudfunctions.net/api/cafes")
+		fetch("https://europe-west1-mirum-e30cc.cloudfunctions.net/api/cafes")
 			.then(res => res.json())
 			.then(data => {
 				console.log(data)

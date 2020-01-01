@@ -81,8 +81,8 @@ const PlaceEdit = (props) => {
 		formData.append("authors", authors)
 		
 		// http://localhost:5001/mirum-e30cc/us-central1/api
-		// https://us-central1-mirum-e30cc.cloudfunctions.net/api
-		fetch("https://us-central1-mirum-e30cc.cloudfunctions.net/api/post-card", {
+		// https://europe-west1-mirum-e30cc.cloudfunctions.net/api
+		fetch("https://europe-west1-mirum-e30cc.cloudfunctions.net/api/post-card", {
 			method: "POST",
 			body: formData
 		}).then(res => {
@@ -104,7 +104,7 @@ const PlaceEdit = (props) => {
 		delete textData.photos
 		delete textData.id
 
-		fetch(`https://us-central1-mirum-e30cc.cloudfunctions.net/api/updateCafeText/${cafeData.id}`, {
+		fetch(`https://europe-west1-mirum-e30cc.cloudfunctions.net/api/updateCafeText/${cafeData.id}`, {
 			method: "POST",
 			body: JSON.stringify(textData)
 		}).then(res => {
