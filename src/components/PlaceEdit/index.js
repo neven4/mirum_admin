@@ -66,35 +66,46 @@ const PlaceEdit = (props) => {
 
 	const uploadClick = () => {
 		let formData = new FormData()
-		let authors = []
+
 		Object.keys(cafeData).forEach(el => {
 			if (el !== "photos") {
 				formData.append(el, cafeData[el])
+			} else {
+				formData.append(el, cafeData[el].map(el => {}))
 			}
 		})
-
-		cafeData.photos.forEach((el, i) => {
-			formData.append(`photo_${i}`, el.fileData)
-			authors.push(el.author)
-		})
-
-		formData.append("authors", authors)
 		
-		// http://localhost:5001/mirum-e30cc/us-central1/api
+		// http://localhost:5001/mirum-e30cc/europe-west1/api
 		// https://europe-west1-mirum-e30cc.cloudfunctions.net/api
 		fetch("https://europe-west1-mirum-e30cc.cloudfunctions.net/api/post-card", {
 			method: "POST",
 			body: formData
-		}).then(res => {
-			if (res.status === 200) {
-				setLoading(false)
-				let data = [...context.state.editableCards]
-
-				data.splice(cardIndex, 1)
-
-				context.update(data)
-			}
 		})
+			.then(res => res.json())
+			.then(data => {
+				let photoLength = cafeData.photos.length
+				cafeData.photos.forEach((el, i) => {
+					const formPhotoData = new FormData()
+
+					formPhotoData.append(`id`, data.data.id)
+					formPhotoData.append(`author`, el.author)
+					formPhotoData.append(`photo_${i}`, el.fileData)
+					
+					fetch("https://europe-west1-mirum-e30cc.cloudfunctions.net/api/post-card/photos", {
+						method: "POST",
+						body: formPhotoData
+					})
+						.then(res => {
+							if (res.status === 200) {
+								photoLength--
+								if (photoLength === 0) {
+									setLoading(false)
+								}
+							}
+						})
+				})
+			})
+
 
 		setLoading(true)
 	}
