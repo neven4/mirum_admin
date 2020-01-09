@@ -65,21 +65,15 @@ const PlaceEdit = (props) => {
 	}
 
 	const uploadClick = () => {
-		let formData = new FormData()
-
-		Object.keys(cafeData).forEach(el => {
-			if (el !== "photos") {
-				formData.append(el, cafeData[el])
-			} else {
-				formData.append(el, cafeData[el].map(el => {}))
-			}
-		})
+		const reqBody = {...cafeData}
+		reqBody.photos = cafeData.photos.map(el => {
+			return {author: el.author}})
 		
 		// http://localhost:5001/mirum-e30cc/europe-west1/api
 		// https://europe-west1-mirum-e30cc.cloudfunctions.net/api
 		fetch("https://europe-west1-mirum-e30cc.cloudfunctions.net/api/post-card", {
 			method: "POST",
-			body: formData
+			body: JSON.stringify(reqBody)
 		})
 			.then(res => res.json())
 			.then(data => {
