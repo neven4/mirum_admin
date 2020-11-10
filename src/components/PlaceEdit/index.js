@@ -8,6 +8,7 @@ import CircularProgress from "@material-ui/core/CircularProgress"
 const PlaceEdit = (props) => {
 	const [loading, setLoading] = useState(false)
 	const [loadingWithoutImages, setLoadingWithoutImages] = useState(false)
+	const [deleting, setDeleting] = useState(false)
 	const context = useContext(Context)
 	const cardIndex = props.match.params.index
 	const cafeData = context.state.editableCards[cardIndex]
@@ -110,8 +111,7 @@ const PlaceEdit = (props) => {
 		delete textData.id
 
 		fetch(`https://europe-west1-mirum-e30cc.cloudfunctions.net/api/updateCafeText/${cafeData.id}`, {
-			method: "POST",
-			body: JSON.stringify(textData)
+			method: "POST"
 		}).then(res => {
 			if (res.status === 200) {
 				setLoadingWithoutImages(false)
@@ -120,6 +120,20 @@ const PlaceEdit = (props) => {
 
 		
 		setLoadingWithoutImages(true)
+	}
+
+	const deleteCafe = () => {
+
+		fetch(`https://europe-west1-mirum-e30cc.cloudfunctions.net/api/delete/${cafeData.id}`, {
+			method: "POST"
+		}).then(res => {
+			if (res.status === 200) {
+				setDeleting(false)
+			}
+		})
+
+		
+		setDeleting(true)
 	}
 
 	return (
@@ -236,6 +250,17 @@ const PlaceEdit = (props) => {
 							</Button>
 						</Grid>
 					}
+
+					<Grid item xs={12}>
+							<Button variant="contained" color="secondary" onClick={deleteCafe}
+								style={{marginTop: "20px"}}
+							>
+								Delete
+								<div className="loading-container" style={!deleting ? {display: "none"} : {}}>
+									<CircularProgress variant="indeterminate" size={20} thickness={5}/>
+								</div>
+							</Button>
+						</Grid>
 
 					{cafeData && cafeData.id
 						? <>
